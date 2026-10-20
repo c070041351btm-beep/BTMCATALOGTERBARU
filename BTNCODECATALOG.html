@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Katalog Samsung Mobile Store</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+<!-- NAVBAR RESPONSIF MOBILE -->
+<header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
+<div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="text-xl sm:text-2xl font-black tracking-tight text-blue-600">SAMSUNG</span>
+<span class="text-[9px] uppercase bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Store</span>
+</div>
+
+<!-- Tombol Admin Auth di Navbar -->
+<div class="flex items-center gap-2">
+<button id="admin-login-btn" onclick="openLoginModal()" class="flex items-center gap-1 bg-slate-900 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+<i data-lucide="shield-lock" class="w-3.5 h-3.5 text-blue-400"></i>
+<span>Admin</span>
+</button>
+<button id="admin-logout-btn" onclick="logoutAdmin()" class="hidden flex items-center gap-1 bg-rose-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+<i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+<span>Keluar</span>
+</button>
+</div>
+</div>
+
+<!-- SEARCH BAR MOBILE -->
+<div class="px-3 pb-3">
+<div class="relative w-full">
+<input
+type="text"
+id="search-input"
+placeholder="Cari seri Galaxy, RAM, Freean, Promo..."
+class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl bg-slate-100 focus:bg-white border border-transparent focus:border-blue-500 focus:outline-none transition-all shadow-inner"
+>
+<i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+</div>
+</div>
+</header>
+
+<!-- ADMIN PANEL SECTION (HANYA BILA SUDAH LOGIN) -->
+<section id="admin-panel" class="hidden bg-slate-900 text-white border-b border-slate-800 transition-all p-4">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+<div>
+<h2 class="text-base font-bold flex items-center gap-2 text-blue-400">
+<i data-lucide="sliders" class="w-4 h-4"></i> Kelola Katalog, Freean & Promo (Mode Admin)
+</h2>
+<p class="text-[11px] text-slate-400">Perubahan data produk, foto Drive, bonus freean, dan harga tersimpan otomatis.</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<button onclick="openCategoryModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-1">
+<i data-lucide="tags" class="w-3.5 h-3.5"></i> Kelola Tipe / Kategori
+</button>
+<button onclick="openSettingsModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-blue-300 px-3 py-2 rounded-lg border border-slate-700 flex items-center gap-1">
+<i data-lucide="share-2" class="w-3.5 h-3.5"></i> Sosmed & WA
+</button>
+<button onclick="resetDefaultProducts()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700">
+Reset Data
+</button>
+<button onclick="openProductForm()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-lg flex items-center gap-1 shadow-md">
+<i data-lucide="plus" class="w-4 h-4"></i> Tambah Produk
+</button>
+</div>
+</div>
+
+<!-- Tabel Produk Admin -->
+<div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-850">
+<table class="w-full text-left text-xs text-slate-300">
+<thead class="bg-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+<tr>
+<th class="p-2.5">Foto</th>
+<th class="p-2.5">Nama & Tipe</th>
+<th class="p-2.5">Freean / Bonus</th>
+<th class="p-2.5">Varian Warna</th>
+<th class="p-2.5">RAM & Harga</th>
+<th class="p-2.5">Promo</th>
+<th class="p-2.5 text-center">Aksi</th>
+</tr>
+</thead>
+<tbody id="admin-product-table" class="divide-y divide-slate-800"></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- HERO PROMO -->
+<section class="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white py-8 px-4 text-center">
+<span class="inline-block bg-blue-500/20 text-blue-300 text-[10px] font-bold px-3 py-1 rounded-full mb-2 border border-blue-500/30 uppercase tracking-widest">
+Katalog Resmi Handphone
+</span>
+<h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">Pilihan Perangkat Samsung</h1>
+<p class="text-slate-300 text-xs sm:text-sm max-w-md mx-auto">Lihat info bonus freean, pilih varian favorit Anda, lalu pesan via WhatsApp.</p>
+</section>
+
+<!-- CONTENT AREA -->
+<main class="max-w-7xl mx-auto px-3 sm:px-6 py-6 flex-1 w-full">
+<!-- FILTER KATEGORI DINAMIS -->
+<div class="flex items-center gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar" id="category-filters"></div>
+
+<!-- GRID PRODUK -->
+<div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6"></div>
+
+<!-- NOT FOUND STATE -->
+<div id="no-result" class="hidden text-center py-16">
+<i data-lucide="package-search" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
+<h3 class="text-sm font-bold text-slate-700">Produk Tidak Ditemukan</h3>
+<p class="text-slate-400 text-xs">Coba kata kunci pencarian yang lain.</p>
+</div>
+</main>
+
+<!-- MODAL DETAIL PRODUK & GALERI & VARIAN -->
+<div id="detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+<div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col">
+<button onclick="closeModal('detail-modal')" class="absolute top-3 right-3 bg-slate-100 p-2 rounded-full text-slate-600 z-10 hover:bg-slate-200">
+<i data-lucide="x" class="w-4 h-4"></i>
+</button>
+<div class="p-5 overflow-y-auto">
+<!-- FOTO UTAMA & THUMBNAILS -->
+<div class="bg-slate-50 rounded-2xl p-2 mb-3">
+<div class="h-44 flex items-center justify-center mb-2">
+<img id="modal-image" src="" alt="" class="max-h-full object-contain transition-all duration-200">
+</div>
+<div id="modal-thumbnails" class="flex items-center gap-2 overflow-x-auto p-1 no-scrollbar justify-center"></div>
+</div>
+
+<!-- BADGE PROMO & KATEGORI -->
+<div class="flex flex-wrap items-center gap-2 mb-1">
+<span id="modal-category" class="text-[10px] font-bold text-blue-600 uppercase tracking-widest"></span>
+<span id="modal-promo-badge" class="hidden text-[10px] font-extrabold bg-rose-100 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full"></span>
+</div>
+
+<h3 id="modal-title" class="text-lg font-bold text-slate-900 mt-0.5 leading-snug"></h3>
+
+<!-- NOTED FREEAN DI ATAS HARGA (MODAL) -->
+<div id="modal-freebie-box" class="hidden my-2.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2 text-emerald-800 text-xs">
+<i data-lucide="gift" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+<div>
+<span class="text-[10px] font-bold text-emerald-600 uppercase block leading-none">Bonus Freean:</span>
+<span id="modal-freebie-text" class="font-extrabold text-emerald-900 text-xs"></span>
+</div>
+</div>
+
+<!-- TAMPILAN HARGA SPESIFIK VARIAN -->
+<div class="flex items-baseline gap-2 mt-1 mb-3">
+<span id="modal-promo-price" class="text-lg font-extrabold text-blue-600"></span>
+<span id="modal-original-price" class="text-xs text-slate-400 line-through"></span>
+</div>
+
+<!-- SEKSI PILIH VARIAN WARNA -->
+<div id="modal-color-section" class="mb-3 border-t border-slate-100 pt-3">
+<label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Pilih Warna:</label>
+<div id="modal-color-options" class="flex flex-wrap gap-1.5"></div>
+</div>
+
+<!-- SEKSI PILIH VARIAN RAM / HARGA -->
+<div id="modal-ram-section" class="mb-3">
+<label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Pilih Varian RAM & Memori:</label>
+<div id="modal-ram-options" class="flex flex-wrap gap-1.5"></div>
+</div>
+
+<div class="border-t border-slate-100 pt-3 mb-4">
+<h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Spesifikasi Singkat</h4>
+<p id="modal-specs" class="text-xs text-slate-600 leading-relaxed"></p>
+</div>
+
+<button onclick="sendWhatsAppOrder()" class="w-full flex items-center justify-center gap-2 bg-emerald-600 active:bg-emerald-700 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition">
+<i data-lucide="message-circle" class="w-4 h-4"></i>
+Pesan Langsung via WhatsApp
+</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL LOGIN ADMIN -->
+<div id="login-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl relative">
+<button onclick="closeModal('login-modal')" class="absolute top-3 right-3 bg-slate-100 p-1.5 rounded-full text-slate-600">
+<i data-lucide="x" class="w-4 h-4"></i>
+</button>
+<div class="text-center mb-4">
+<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+<i data-lucide="shield-check" class="w-5 h-5"></i>
+</div>
+<h3 class="text-base font-bold text-slate-900">Login Mode Admin</h3>
+<p class="text-[11px] text-slate-500">Masukkan kata sandi admin Anda.</p>
+</div>
+<form onsubmit="handleLogin(event)">
+<div class="mb-3">
+<input type="password" id="admin-password" placeholder="Ketik kata sandi..." required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+<span id="login-error" class="hidden text-rose-500 text-[11px] mt-1 block font-medium">Sandi salah! Coba lagi.</span>
+</div>
+<button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-xl text-xs active:bg-blue-700 transition">Buka Panel</button>
+</form>
+</div>
+</div>
+
+<!-- MODAL KELOLA TIPE / KATEGORI ADMIN -->
+<div id="category-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl relative max-h-[85vh] flex flex-col">
+<button onclick="closeModal('category-modal')" class="absolute top-3 right-3 bg-slate-100 p-1.5 rounded-full text-slate-600">
+<i data-lucide="x" class="w-4 h-4"></i>
+</button>
+<h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+<i data-lucide="tags" class="w-4 h-4 text-amber-500"></i> Kelola Tipe & Kategori
+</h3>
+
+<form onsubmit="addCategory(event)" class="flex gap-2 mb-4">
+<input type="text" id="new-cat-input" placeholder="Nama Tipe Baru..." required class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+<button type="submit" class="bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-blue-700 transition">Tambah</button>
+</form>
+
+<div class="overflow-y-auto flex-1 border-t border-slate-100 pt-2">
+<label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Daftar Tipe Aktif:</label>
+<div id="category-list-admin" class="space-y-1.5"></div>
+</div>
+</div>
+</div>
+
+<!-- MODAL FORM TAMBAH / EDIT PRODUK ADMIN -->
+<div id="product-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl max-w-sm sm:max-w-md w-full p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+<button onclick="closeModal('product-modal')" class="absolute top-3 right-3 bg-slate-100 p-1.5 rounded-full text-slate-600">
+<i data-lucide="x" class="w-4 h-4"></i>
+</button>
+<h3 id="form-title" class="text-sm font-bold text-slate-900 mb-3">Tambah Produk Baru</h3>
+<form onsubmit="saveProduct(event)" class="space-y-3">
+<input type="hidden" id="prod-id">
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Nama Produk</label>
+<input type="text" id="prod-name" placeholder="Misal: Galaxy S24 Ultra" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Tipe / Kategori</label>
+<select id="prod-category" required class="w-full px-2 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 bg-white"></select>
+</div>
+
+<!-- FIELD FREEAN / BONUS -->
+<div>
+<label class="block text-[11px] font-semibold text-emerald-700 mb-1 flex items-center gap-1">
+<i data-lucide="gift" class="w-3.5 h-3.5"></i> Bonus / Freean (Diatas Harga)
+</label>
+<input type="text" id="prod-freebie" placeholder="Misal: Free Charger 45W + Galaxy Buds" class="w-full px-3 py-2 text-xs rounded-xl border border-emerald-300 focus:outline-none focus:border-emerald-500 bg-emerald-50/30">
+</div>
+
+<!-- FIELD VARIAN WARNA -->
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Varian Warna (Pisahkan dengan koma)</label>
+<input type="text" id="prod-colors" placeholder="Titanium Black, Titanium Gray, Titanium Violet" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+
+<!-- FIELD VARIAN RAM & HARGA -->
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Varian RAM & Harga (Format: RAM | Harga Promo | Harga Normal)</label>
+<textarea id="prod-ram-variants" rows="3" placeholder="12GB / 256GB | Rp 21.999.000 | Rp 23.999.000&#10;12GB / 512GB | Rp 23.999.000 | Rp 25.999.000" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 font-mono text-[11px]"></textarea>
+<span class="text-[10px] text-slate-400 block mt-0.5">Satu varian per baris. Contoh: 12GB/256GB | Rp 21.999.000 | Rp 23.999.000</span>
+</div>
+
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Label / Info Promo (Opsional)</label>
+<input type="text" id="prod-promo" placeholder="Misal: Diskon Rp 2 Juta, Cashback" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">URL Gambar Produk (Google Drive atau URL Biasa)</label>
+<textarea id="prod-images" rows="2" placeholder="https://drive.google.com/file/d/123xyz.../view?usp=sharing&#10;https://image2.jpg" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500 font-mono text-[11px]"></textarea>
+<span class="text-[10px] text-blue-600 block mt-0.5 font-medium">Bisa pakai link Google Drive (Pastikan akses diset 'Siapa saja yang memiliki link'). Satu link per baris.</span>
+</div>
+
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Spesifikasi Singkat</label>
+<textarea id="prod-specs" rows="2" placeholder="RAM, Processor, Layar, dll." required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500"></textarea>
+</div>
+<button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-xl text-xs active:bg-blue-700 transition">Simpan Data</button>
+</form>
+</div>
+</div>
+
+<!-- MODAL PENGATURAN SOSMED & KONTAK WA -->
+<div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl max-w-sm sm:max-w-md w-full p-5 shadow-2xl relative">
+<button onclick="closeModal('settings-modal')" class="absolute top-3 right-3 bg-slate-100 p-1.5 rounded-full text-slate-600">
+<i data-lucide="x" class="w-4 h-4"></i>
+</button>
+<h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
+<i data-lucide="share-2" class="w-4 h-4 text-blue-600"></i> Pengaturan Kontak & Sosmed
+</h3>
+<form onsubmit="saveSettings(event)" class="space-y-3">
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Nomor WhatsApp Admin (Awal 62)</label>
+<input type="text" id="set-wa" placeholder="6281234567890" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Link Instagram</label>
+<input type="url" id="set-ig" placeholder="https://instagram.com/namatoko" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Link Facebook</label>
+<input type="url" id="set-fb" placeholder="https://facebook.com/namatoko" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+<div>
+<label class="block text-[11px] font-semibold text-slate-700 mb-1">Link TikTok</label>
+<input type="url" id="set-tiktok" placeholder="https://tiktok.com/@namatoko" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-blue-500">
+</div>
+<button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-xl text-xs active:bg-blue-700 transition">Simpan Pengaturan</button>
+</form>
+</div>
+</div>
+
+<!-- FOOTER SOSMED -->
+<footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+<div class="max-w-7xl mx-auto px-4 flex flex-col items-center gap-3">
+<div class="flex items-center gap-4 text-slate-500" id="social-links-footer">
+<a id="footer-wa" href="#" target="_blank" class="hover:text-emerald-600 transition"><i data-lucide="message-circle" class="w-5 h-5"></i></a>
+<a id="footer-ig" href="#" target="_blank" class="hover:text-pink-600 transition"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+<a id="footer-fb" href="#" target="_blank" class="hover:text-blue-600 transition"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+<a id="footer-tiktok" href="#" target="_blank" class="hover:text-slate-900 transition"><i data-lucide="video" class="w-5 h-5"></i></a>
+</div>
+<div class="text-center text-[11px] text-slate-400">
+© 2026 Katalog Mobile Samsung Demo. All rights reserved.
+</div>
+</div>
+</footer>
+
+<!-- LOGIKA JAVASCRIPT -->
+<script>
+const ADMIN_PASSWORD = "Sepbtm123###";
+
+const DEFAULT_CATEGORIES = ['Smartphone', 'Tablet', 'Wearables', 'Display', 'Appliances'];
+
+const DEFAULT_SETTINGS = {
+waNumber: "6281234567890",
+instagram: "https://instagram.com/samsungstore.demo",
+facebook: "https://facebook.com/samsungstore.demo",
+tiktok: "https://tiktok.com/@samsungstore.demo"
+};
+
+const DEFAULT_PRODUCTS = [
+{
+id: 1,
+name: "Galaxy S24 Ultra",
+category: "Smartphone",
+freebie: "Free Charger 45W + Clear Case",
+promo: "Diskon Rp 2 Juta",
+colors: ["Titanium Black", "Titanium Gray", "Titanium Violet"],
+ramVariants: [
+{ ram: "12GB / 256GB", price: "Rp 21.999.000", originalPrice: "Rp 23.999.000" },
+{ ram: "12GB / 512GB", price: "Rp 23.999.000", originalPrice: "Rp 25.999.000" },
+{ ram: "12GB / 1TB", price: "Rp 27.999.000", originalPrice: "Rp 29.999.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80",
+"https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Snapdragon 8 Gen 3, Layar 6.8\" Dynamic AMOLED 2X, Kamera 200MP Quad Tele, Titanium Frame & S-Pen."
+},
+{
+id: 2,
+name: "Galaxy Z Flip6",
+category: "Smartphone",
+freebie: "Free Flipsuit Case + Adapter 25W",
+promo: "Gratis Aksesori",
+colors: ["Mint", "Silver Shadow", "Yellow", "Blue"],
+ramVariants: [
+{ ram: "12GB / 256GB", price: "Rp 17.499.000", originalPrice: "Rp 18.999.000" },
+{ ram: "12GB / 512GB", price: "Rp 19.499.000", originalPrice: "Rp 20.999.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80",
+"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Desain lipat ringkas, FlexWindow 3.4\", Kamera 50MP ProVisual Engine, Baterai 4000mAh."
+},
+{
+id: 3,
+name: "Galaxy A55 5G",
+category: "Smartphone",
+freebie: "Free Tempered Glass & Softcase",
+promo: "Diskon Rp 500.000",
+colors: ["Awesome Iceblue", "Awesome Navy", "Awesome Lilac"],
+ramVariants: [
+{ ram: "8GB / 256GB", price: "Rp 5.999.000", originalPrice: "Rp 6.499.000" },
+{ ram: "12GB / 256GB", price: "Rp 6.699.000", originalPrice: "Rp 6.999.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Metal frame premium, Layar Super AMOLED 120Hz 6.6\", Kamera 50MP OIS, Baterai 5000mAh."
+},
+{
+id: 4,
+name: "Galaxy Tab S9 FE",
+category: "Tablet",
+freebie: "Bonus S-Pen In-Box & Smart Book Cover",
+promo: "Promo Work & Play",
+colors: ["Gray", "Mint", "Lavender"],
+ramVariants: [
+{ ram: "6GB / 128GB", price: "Rp 6.499.000", originalPrice: "Rp 7.199.000" },
+{ ram: "8GB / 256GB", price: "Rp 7.499.000", originalPrice: "Rp 8.199.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Layar 10.9\", sudah termasuk S-Pen di kemasan, Sertifikasi IP68 tahan air dan debu."
+},
+{
+id: 5,
+name: "Galaxy Watch Ultra",
+category: "Wearables",
+freebie: "Free Extra Sport Band",
+promo: "Cashback Rp 500.000",
+colors: ["Titanium Gray", "Titanium White", "Titanium Silver"],
+ramVariants: [
+{ ram: "47mm Bluetooth / LTE", price: "Rp 8.999.000", originalPrice: "Rp 9.499.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Bodi Titanium Kelas 4, Baterai tahan 100 jam, Sirene darurat 86dB, GPS Dual-Frequency."
+},
+{
+id: 6,
+name: "Galaxy Buds3 Pro",
+category: "Wearables",
+freebie: "Free Carabiner Clip Case",
+promo: "Promo Audio",
+colors: ["Silver", "White"],
+ramVariants: [
+{ ram: "Standard Wireless", price: "Rp 3.299.000", originalPrice: "Rp 3.599.000" }
+],
+images: [
+"https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80"
+],
+specs: "Blade Lights futuristik, Hi-Fi 24-bit audio, Intelligent Active Noise Cancelling, Galaxy AI."
+}
+];
+
+// FUNGSI UTILITAS FORMAT GOOGLE DRIVE LINK KE DIRECT IMAGE URL
+function formatImageUrl(url) {
+if (!url) return 'https://via.placeholder.com/300';
+const trimmed = url.trim();
+if (trimmed.includes('drive.google.com')) {
+const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+if (match && match[1]) {
+return `https://lh3.googleusercontent.com/d/${match[1]}`;
+}
+}
+return trimmed;
+}
+
+// STORAGE LOGIC WITH MIGRATION
+function getStoredProducts() {
+const data = localStorage.getItem('samsung_products');
+if (!data) return DEFAULT_PRODUCTS;
+const parsed = JSON.parse(data);
+return parsed.map(p => {
+const defaultRamVariants = (p.price) ? [{ ram: "Standard", price: p.price, originalPrice: p.originalPrice || "" }] : [];
+return {
+...p,
+freebie: p.freebie || "",
+promo: p.promo || "",
+colors: (p.colors && p.colors.length > 0) ? p.colors : ["Standard"],
+ramVariants: (p.ramVariants && p.ramVariants.length > 0) ? p.ramVariants : defaultRamVariants,
+images: p.images || (p.image ? [p.image] : [])
+};
+});
+}
+
+function saveStoredProducts(data) {
+localStorage.setItem('samsung_products', JSON.stringify(data));
+}
+
+function getStoredCategories() {
+const data = localStorage.getItem('samsung_categories');
+return data ? JSON.parse(data) : DEFAULT_CATEGORIES;
+}
+
+function saveStoredCategories(data) {
+localStorage.setItem('samsung_categories', JSON.stringify(data));
+}
+
+function getStoredSettings() {
+const data = localStorage.getItem('samsung_settings');
+return data ? JSON.parse(data) : DEFAULT_SETTINGS;
+}
+
+function saveStoredSettings(data) {
+localStorage.setItem('samsung_settings', JSON.stringify(data));
+}
+
+let products = getStoredProducts();
+let categories = getStoredCategories();
+let settings = getStoredSettings();
+let currentCategory = 'all';
+let searchQuery = '';
+let activeProductForModal = null;
+let selectedColor = '';
+let selectedRamVariant = null;
+
+// RENDER FILTER KATEGORI & SELECT OPTIONS
+function renderCategoryUI() {
+const filterContainer = document.getElementById('category-filters');
+filterContainer.innerHTML = '';
+
+const allBtn = document.createElement('button');
+allBtn.onclick = () => filterCategory('all');
+allBtn.className = `filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${currentCategory === 'all' ? 'active-filter bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'}`;
+allBtn.textContent = 'Semua';
+filterContainer.appendChild(allBtn);
+
+categories.forEach(cat => {
+const btn = document.createElement('button');
+btn.onclick = () => filterCategory(cat);
+btn.className = `filter-btn px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${currentCategory === cat ? 'active-filter bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200'}`;
+btn.textContent = cat;
+filterContainer.appendChild(btn);
+});
+
+const selectElem = document.getElementById('prod-category');
+selectElem.innerHTML = '';
+categories.forEach(cat => {
+const opt = document.createElement('option');
+opt.value = cat;
+opt.textContent = cat;
+selectElem.appendChild(opt);
+});
+
+const adminCatList = document.getElementById('category-list-admin');
+adminCatList.innerHTML = '';
+categories.forEach(cat => {
+const row = document.createElement('div');
+row.className = "flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs";
+row.innerHTML = `<span class="font-semibold text-slate-700">${cat}</span>
+<button onclick="deleteCategory('${cat}')" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>`;
+adminCatList.appendChild(row);
+});
+
+lucide.createIcons();
+}
+
+function openCategoryModal() {
+renderCategoryUI();
+document.getElementById('category-modal').classList.remove('hidden');
+}
+
+function addCategory(e) {
+e.preventDefault();
+const input = document.getElementById('new-cat-input');
+const val = input.value.trim();
+if (val && !categories.includes(val)) {
+categories.push(val);
+saveStoredCategories(categories);
+renderCategoryUI();
+renderProducts();
+input.value = '';
+}
+}
+
+function deleteCategory(catName) {
+if (confirm(`Hapus tipe "${catName}"?`)) {
+categories = categories.filter(c => c !== catName);
+saveStoredCategories(categories);
+if (currentCategory === catName) currentCategory = 'all';
+renderCategoryUI();
+renderProducts();
+}
+}
+
+function renderSocialLinks() {
+document.getElementById('footer-wa').href = `https://wa.me/${settings.waNumber}`;
+document.getElementById('footer-ig').href = settings.instagram || '#';
+document.getElementById('footer-fb').href = settings.facebook || '#';
+document.getElementById('footer-tiktok').href = settings.tiktok || '#';
+}
+
+// RENDER KATALOG PRODUK DEPAN
+function renderProducts() {
+const grid = document.getElementById('product-grid');
+const noResult = document.getElementById('no-result');
+grid.innerHTML = '';
+
+const filtered = products.filter(item => {
+const matchCategory = currentCategory === 'all' || item.category === currentCategory;
+const colorStr = (item.colors || []).join(' ');
+const ramStr = (item.ramVariants || []).map(v => v.ram).join(' ');
+const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+(item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+(item.promo && item.promo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+(item.freebie && item.freebie.toLowerCase().includes(searchQuery.toLowerCase())) ||
+colorStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+ramStr.toLowerCase().includes(searchQuery.toLowerCase());
+return matchCategory && matchSearch;
+});
+
+if (filtered.length === 0) {
+noResult.classList.remove('hidden');
+} else {
+noResult.classList.add('hidden');
+filtered.forEach(p => {
+const rawImg = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/300';
+const mainImg = formatImageUrl(rawImg);
+const startingPrice = (p.ramVariants && p.ramVariants.length > 0) ? p.ramVariants[0].price : 'Rp -';
+const startingOriginal = (p.ramVariants && p.ramVariants.length > 0) ? p.ramVariants[0].originalPrice : '';
+
+const card = document.createElement('div');
+card.className = "bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-4 flex flex-col justify-between shadow-sm relative";
+card.innerHTML = `<div>
+<div class="h-32 sm:h-44 w-full bg-slate-50 rounded-xl mb-2 sm:mb-3 overflow-hidden flex items-center justify-center p-2 relative">
+<img src="${mainImg}" alt="${p.name}" class="h-full object-contain">
+${p.promo ? `<span class="absolute top-2 left-2 bg-rose-600 text-white text-[8px] sm:text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider">${p.promo}</span>` : ''}
+</div>
+<span class="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-wider block mb-0.5">${p.category}</span>
+<h2 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1 mb-1">${p.name}</h2>
+
+<!-- NOTED / BADGE FREEAN DI ATAS HARGA -->
+${p.freebie ? `<div class="text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1 mb-1.5 w-fit line-clamp-1"><i data-lucide="gift" class="w-3 h-3 text-emerald-600 shrink-0"></i> <span>${p.freebie}</span></div>` : ''}
+
+<div class="mb-3">
+<div class="text-slate-900 font-extrabold text-xs sm:text-sm leading-tight">${startingPrice}</div>
+${startingOriginal ? `<div class="text-slate-400 text-[10px] line-through leading-tight">${startingOriginal}</div>` : ''}
+</div>
+</div>
+<button onclick="openModalDetail(${p.id})" class="w-full bg-slate-100 active:bg-blue-600 active:text-white text-slate-700 font-semibold py-2 rounded-xl text-[11px] sm:text-xs transition flex items-center justify-center gap-1">
+<i data-lucide="eye" class="w-3.5 h-3.5"></i> Detail & Pesan
+</button>`;
+grid.appendChild(card);
+});
+}
+lucide.createIcons();
+}
+
+function renderAdminTable() {
+const tbody = document.getElementById('admin-product-table');
+tbody.innerHTML = '';
+
+products.forEach(p => {
+const rawImg = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/300';
+const mainImg = formatImageUrl(rawImg);
+const colorsStr = (p.colors && p.colors.length > 0) ? p.colors.join(', ') : '-';
+const ramSummary = (p.ramVariants && p.ramVariants.length > 0)
+? p.ramVariants.map(v => `${v.ram} (${v.price})`).join('<br>')
+: '-';
+
+const tr = document.createElement('tr');
+tr.innerHTML = `<td class="p-2"><img src="${mainImg}" class="w-8 h-8 object-cover rounded bg-slate-700"></td>
+<td class="p-2">
+<div class="font-semibold text-white leading-tight">${p.name}</div>
+<div class="text-[10px] text-blue-400">${p.category}</div>
+</td>
+<td class="p-2 font-semibold text-emerald-400 text-[11px]">${p.freebie || '-'}</td>
+<td class="p-2 text-[11px] text-slate-300">${colorsStr}</td>
+<td class="p-2 text-[10px] text-emerald-400 leading-tight">${ramSummary}</td>
+<td class="p-2 font-medium text-amber-300 text-[11px]">${p.promo || '-'}</td>
+<td class="p-2 text-center whitespace-nowrap">
+<button onclick="editProduct(${p.id})" class="p-1 text-blue-400 hover:text-blue-200"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+<button onclick="deleteProduct(${p.id})" class="p-1 text-rose-400 hover:text-rose-200 ml-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+</td>`;
+tbody.appendChild(tr);
+});
+lucide.createIcons();
+}
+
+function filterCategory(cat) {
+currentCategory = cat;
+renderCategoryUI();
+renderProducts();
+}
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+searchQuery = e.target.value;
+renderProducts();
+});
+
+// DETAIL MODAL WITH VARIANTS & FREEBIE
+function openModalDetail(id) {
+const product = products.find(p => String(p.id) === String(id));
+if (!product) return;
+activeProductForModal = product;
+
+const mainImage = document.getElementById('modal-image');
+const thumbnailsContainer = document.getElementById('modal-thumbnails');
+
+document.getElementById('modal-title').textContent = product.name;
+document.getElementById('modal-category').textContent = product.category;
+
+// Promo Badge
+const promoBadge = document.getElementById('modal-promo-badge');
+if (product.promo) {
+promoBadge.textContent = product.promo;
+promoBadge.classList.remove('hidden');
+} else {
+promoBadge.classList.add('hidden');
+}
+
+// Freebie / Bonus Box (Di atas harga)
+const freebieBox = document.getElementById('modal-freebie-box');
+const freebieText = document.getElementById('modal-freebie-text');
+if (product.freebie) {
+freebieText.textContent = product.freebie;
+freebieBox.classList.remove('hidden');
+} else {
+freebieBox.classList.add('hidden');
+}
+
+// RENDER WARNA VARIAN
+const colorContainer = document.getElementById('modal-color-options');
+colorContainer.innerHTML = '';
+const colors = (product.colors && product.colors.length > 0) ? product.colors : ['Default'];
+selectedColor = colors[0];
+
+colors.forEach((color, idx) => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.textContent = color;
+btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${idx === 0 ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`;
+btn.onclick = () => {
+selectedColor = color;
+document.querySelectorAll('#modal-color-options button').forEach(b => {
+b.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold border transition bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+});
+btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold border transition bg-blue-600 text-white border-blue-600';
+};
+colorContainer.appendChild(btn);
+});
+
+// RENDER RAM / MEMORI & HARGA VARIAN
+const ramContainer = document.getElementById('modal-ram-options');
+ramContainer.innerHTML = '';
+const ramVariants = (product.ramVariants && product.ramVariants.length > 0) ? product.ramVariants : [{ ram: 'Standard', price: 'Rp 0', originalPrice: '' }];
+
+function updatePriceDisplay(variant) {
+selectedRamVariant = variant;
+document.getElementById('modal-promo-price').textContent = variant.price;
+document.getElementById('modal-original-price').textContent = variant.originalPrice || '';
+}
+
+updatePriceDisplay(ramVariants[0]);
+
+ramVariants.forEach((v, idx) => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.textContent = `${v.ram}`;
+btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${idx === 0 ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`;
+btn.onclick = () => {
+updatePriceDisplay(v);
+document.querySelectorAll('#modal-ram-options button').forEach(b => {
+b.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold border transition bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+});
+btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold border transition bg-slate-900 text-white border-slate-900';
+};
+ramContainer.appendChild(btn);
+});
+
+document.getElementById('modal-specs').textContent = product.specs;
+
+// Setup Gambar & Galeri Thumbnail
+const imgList = (product.images && product.images.length > 0) ? product.images.map(formatImageUrl) : ['https://via.placeholder.com/300'];
+mainImage.src = imgList[0];
+
+thumbnailsContainer.innerHTML = '';
+if (imgList.length > 1) {
+imgList.forEach((imgUrl, index) => {
+const thumb = document.createElement('img');
+thumb.src = imgUrl;
+thumb.className = `w-10 h-10 object-contain rounded-lg border-2 cursor-pointer bg-white transition-all ${index === 0 ? 'border-blue-600 scale-105' : 'border-slate-200 opacity-60'}`;
+thumb.onclick = () => {
+mainImage.src = imgUrl;
+document.querySelectorAll('#modal-thumbnails img').forEach(t => t.className = 'w-10 h-10 object-contain rounded-lg border-2 cursor-pointer bg-white transition-all border-slate-200 opacity-60');
+thumb.className = 'w-10 h-10 object-contain rounded-lg border-2 cursor-pointer bg-white transition-all border-blue-600 scale-105';
+};
+thumbnailsContainer.appendChild(thumb);
+});
+}
+
+document.getElementById('detail-modal').classList.remove('hidden');
+lucide.createIcons();
+}
+
+// FORMAT PESAN WHATSAPP DENGAN FREEAN & VARIAN LENGKAP
+function sendWhatsAppOrder() {
+if (!activeProductForModal || !selectedRamVariant) return;
+
+let text = `Halo, saya ingin memesan produk berikut:\n\n` +
+`*Produk:* ${activeProductForModal.name}\n` +
+`*Tipe:* ${activeProductForModal.category}\n` +
+`*Varian Warna:* ${selectedColor}\n` +
+`*Varian RAM/Memori:* ${selectedRamVariant.ram}\n` +
+`*Harga Promo Varian:* ${selectedRamVariant.price}\n`;
+
+if (selectedRamVariant.originalPrice) {
+text += `*Harga Normal:* ~${selectedRamVariant.originalPrice}~\n`;
+}
+
+if (activeProductForModal.freebie) {
+text += `*Bonus / Freean:* ${activeProductForModal.freebie}\n`;
+}
+
+if (activeProductForModal.promo) {
+text += `*Info Promo:* ${activeProductForModal.promo}\n`;
+}
+
+text += `\nApakah unit dengan varian warna, RAM, dan bonus freean ini masih tersedia? Terima kasih!`;
+
+const waUrl = `https://wa.me/${settings.waNumber}?text=${encodeURIComponent(text)}`;
+window.open(waUrl, '_blank');
+}
+
+// ADMIN AUTH
+function openLoginModal() {
+document.getElementById('admin-password').value = '';
+document.getElementById('login-error').classList.add('hidden');
+document.getElementById('login-modal').classList.remove('hidden');
+}
+
+function handleLogin(e) {
+e.preventDefault();
+const pass = document.getElementById('admin-password').value;
+if (pass === ADMIN_PASSWORD) {
+closeModal('login-modal');
+document.getElementById('admin-login-btn').classList.add('hidden');
+document.getElementById('admin-logout-btn').classList.remove('hidden');
+document.getElementById('admin-panel').classList.remove('hidden');
+renderAdminTable();
+} else {
+document.getElementById('login-error').classList.remove('hidden');
+}
+}
+
+function logoutAdmin() {
+document.getElementById('admin-login-btn').classList.remove('hidden');
+document.getElementById('admin-logout-btn').classList.add('hidden');
+document.getElementById('admin-panel').classList.add('hidden');
+}
+
+// MANAJEMEN PRODUK (TAMBAH / EDIT / HAPUS)
+function openProductForm() {
+renderCategoryUI();
+document.getElementById('form-title').textContent = "Tambah Produk Baru";
+document.getElementById('prod-id').value = "";
+document.getElementById('prod-name').value = "";
+if(categories.length > 0) document.getElementById('prod-category').value = categories[0];
+document.getElementById('prod-freebie').value = "";
+document.getElementById('prod-colors').value = "";
+document.getElementById('prod-ram-variants').value = "";
+document.getElementById('prod-promo').value = "";
+document.getElementById('prod-images').value = "";
+document.getElementById('prod-specs').value = "";
+document.getElementById('product-modal').classList.remove('hidden');
+}
+
+function editProduct(id) {
+const p = products.find(item => String(item.id) === String(id));
+if (!p) return;
+
+renderCategoryUI();
+document.getElementById('form-title').textContent = "Edit Data Produk";
+document.getElementById('prod-id').value = p.id;
+document.getElementById('prod-name').value = p.name;
+document.getElementById('prod-category').value = p.category;
+document.getElementById('prod-freebie').value = p.freebie || '';
+document.getElementById('prod-colors').value = (p.colors && p.colors.length > 0) ? p.colors.join(', ') : '';
+document.getElementById('prod-ram-variants').value = (p.ramVariants && p.ramVariants.length > 0)
+? p.ramVariants.map(v => `${v.ram} | ${v.price}${v.originalPrice ? ' | ' + v.originalPrice : ''}`).join('\n')
+: '';
+document.getElementById('prod-promo').value = p.promo || '';
+document.getElementById('prod-images').value = (p.images && p.images.length > 0) ? p.images.join('\n') : '';
+document.getElementById('prod-specs').value = p.specs;
+
+document.getElementById('product-modal').classList.remove('hidden');
+}
+
+function saveProduct(e) {
+e.preventDefault();
+const id = document.getElementById('prod-id').value;
+const name = document.getElementById('prod-name').value;
+const category = document.getElementById('prod-category').value;
+const freebie = document.getElementById('prod-freebie').value;
+const rawColors = document.getElementById('prod-colors').value;
+const rawRamVariants = document.getElementById('prod-ram-variants').value;
+const promo = document.getElementById('prod-promo').value;
+const rawImages = document.getElementById('prod-images').value;
+const specs = document.getElementById('prod-specs').value;
+
+const colors = rawColors.split(',').map(c => c.trim()).filter(c => c.length > 0);
+
+const ramVariants = rawRamVariants.split('\n').map(line => {
+const parts = line.split('|').map(p => p.trim());
+return {
+ram: parts[0] || 'Standard',
+price: parts[1] || 'Rp 0',
+originalPrice: parts[2] || ''
+};
+}).filter(v => v.ram.length > 0);
+
+const images = rawImages.split('\n').map(url => url.trim()).filter(url => url.length > 0);
+
+if (id) {
+const idx = products.findIndex(p => String(p.id) === String(id));
+if (idx !== -1) {
+products[idx] = { id: Number(id) || id, name, category, freebie, colors, ramVariants, promo, images, specs };
+}
+} else {
+products.unshift({ id: Date.now(), name, category, freebie, colors, ramVariants, promo, images, specs });
+}
+
+saveStoredProducts(products);
+renderProducts();
+renderAdminTable();
+closeModal('product-modal');
+}
+
+function deleteProduct(id) {
+if (confirm("Hapus produk ini dari katalog?")) {
+products = products.filter(p => String(p.id) !== String(id));
+saveStoredProducts(products);
+renderProducts();
+renderAdminTable();
+}
+}
+
+function resetDefaultProducts() {
+if (confirm("Reset ulang produk dan kategori ke awal?")) {
+products = [...DEFAULT_PRODUCTS];
+categories = [...DEFAULT_CATEGORIES];
+saveStoredProducts(products);
+saveStoredCategories(categories);
+renderCategoryUI();
+renderProducts();
+renderAdminTable();
+}
+}
+
+// MODAL PENGATURAN TOKO & SOSMED
+function openSettingsModal() {
+document.getElementById('set-wa').value = settings.waNumber || '';
+document.getElementById('set-ig').value = settings.instagram || '';
+document.getElementById('set-fb').value = settings.facebook || '';
+document.getElementById('set-tiktok').value = settings.tiktok || '';
+document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function saveSettings(e) {
+e.preventDefault();
+settings = {
+waNumber: document.getElementById('set-wa').value.trim(),
+instagram: document.getElementById('set-ig').value.trim(),
+facebook: document.getElementById('set-fb').value.trim(),
+tiktok: document.getElementById('set-tiktok').value.trim()
+};
+saveStoredSettings(settings);
+renderSocialLinks();
+closeModal('settings-modal');
+alert("Pengaturan Toko & Sosmed berhasil disimpan!");
+}
+
+function closeModal(id) {
+document.getElementById(id).classList.add('hidden');
+}
+
+// INITIAL RENDER
+renderCategoryUI();
+renderSocialLinks();
+renderProducts();
+</script>
+</body>
+</html>
